@@ -40,13 +40,11 @@ const NewPost = () => {
             payload:""
         })
         console.log("posts submitted");
-        console.log(posts);
     }
 
     useEffect(() => {
-        console.log("Title:", title);
-        console.log("Content:", content);
-    }, [title, content]);
+        console.log("updated posts:",posts)
+    }, [posts]);
 
     return (
         <>

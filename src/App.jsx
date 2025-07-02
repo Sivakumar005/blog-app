@@ -3,6 +3,7 @@ import './App.css'
 import { Routes,Route } from 'react-router-dom'
 import { Home } from './pages/Home'
 import NewPost from './pages/Newpost'
+import { Posts } from './pages/Posts'
 
 function App() {
 
@@ -10,7 +11,7 @@ function App() {
     <Routes>
       <Route path='/' element={<Home/>}/>
       <Route path='/newpost' element={<NewPost/>}/>
-      <Route path='/important' element={<Home/>}/>
+      <Route path='/posts' element={<Posts/>}/>
       <Route path='/profile' element={<Home/>}/>
     </Routes>
   )

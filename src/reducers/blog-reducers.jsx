@@ -15,7 +15,7 @@ export const BlogReducer = (state, { type, payload }) => {
         case "ADD_POST":
             return {
                 ...state,
-                posts: [payload, ...state.posts],
+                posts: [...state.posts,payload],
             };
 
         default:
