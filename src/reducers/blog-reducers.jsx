@@ -17,6 +17,16 @@ export const BlogReducer = (state, { type, payload }) => {
                 ...state,
                 posts: [...state.posts,payload],
             };
+        case "ADD_TO_IMP":
+            return{
+                ...state,
+                important:[...state.important,state.posts.find(({id})=>id===payload.id)]
+            }
+        case "REMOVE_FROM_IMP":
+            return{
+                ...state,
+                important:state.important.filter(({id})=>id!==payload.id)
+            }
 
         default:
             return state;

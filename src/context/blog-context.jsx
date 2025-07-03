@@ -12,10 +12,10 @@ const BlogProvider = ({ children }) => {
   };
 
   const [state, BlogDispatch] = useReducer(BlogReducer, initialState);
-  const { title, content, posts } = state;
+  const { title, content, posts,important } = state;
 
   return (
-    <BlogContext.Provider value={{ title, content, posts, BlogDispatch }}>
+    <BlogContext.Provider value={{ title, content, posts,important, BlogDispatch }}>
       {children}
     </BlogContext.Provider>
   );

@@ -18,7 +18,8 @@ export const Sidebar = () => {
                 </span>
                 <span className="font-semibold">Posts</span>
             </NavLink>
-            <NavLink className={getStyles} to="/important"><span className="material-icons-outlined">
+            <NavLink className={getStyles} to="/important">
+            <span className="material-icons-outlined">
                 label_important
             </span>
                 <span className="font-semibold">Important</span>

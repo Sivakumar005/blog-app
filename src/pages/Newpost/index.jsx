@@ -28,7 +28,8 @@ const NewPost = () => {
                 id:crypto.randomUUID(),
                 title,
                 content,
-                createdAt:new Date().toISOString()
+                createdAt:new Date().toISOString(),
+                isImportant:false
             }
         })
         BlogDispatch({
