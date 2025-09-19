@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { Hono } from 'hono';
-import {verify } from 'hono/jwt'
+import { verify } from 'hono/jwt'
 
 // Create the main Hono app
 const blogRouter = new Hono<{
@@ -14,90 +14,103 @@ const blogRouter = new Hono<{
     }
 }>();
 
-blogRouter.use(async(c,next)=>{
+blogRouter.use(async (c, next) => {
     const header = c.req.header('Authorization')
 
-  if (!header) {
-    return c.json({ error: 'Missing Authorization header' }, 401)
-  }
-
-  const token = header.split(' ')[1]
-
-  if (!token) {
-    return c.json({ error: 'Invalid Authorization header format' }, 401)
-  }
-
-  try {
-    const response = await verify(token, c.env.JWT_SECRET)
-
-    if (response.id) {
-      c.set('userId', response.id as string)
-      await next()
-    } else {
-      return c.json({ error: 'Unauthorised' }, 403)
+    if (!header) {
+        return c.json({ error: 'Missing Authorization header' }, 401)
     }
-  } catch (err) {
-    return c.json({ error: 'Invalid or expired token' }, 401)
-  }
+
+    const token = header.split(' ')[1]
+
+    if (!token) {
+        return c.json({ error: 'Invalid Authorization header format' }, 401)
+    }
+
+    try {
+        const response = await verify(token, c.env.JWT_SECRET)
+
+        if (response.id) {
+            c.set('userId', response.id as string)
+            await next()
+        } else {
+            return c.json({ error: 'Unauthorised' }, 403)
+        }
+    } catch (err) {
+        return c.json({ error: 'Invalid or expired token' }, 401)
+    }
 })
 
-blogRouter.post('/', async(c) => {
-	console.log(c.get('userId'));
+blogRouter.post('/', async (c) => {
+    console.log(c.get('userId'));
     const prisma = new PrismaClient({
-		datasourceUrl: c.env?.POOLING_URL	,
-	}).$extends(withAccelerate());
+        datasourceUrl: c.env?.POOLING_URL,
+    }).$extends(withAccelerate());
 
-    const body=await c.req.json();
-    const post=await prisma.post.create({
-        data:{
-            title:body.title,
-            content:body.content,
-            authorId:body.authorId
+    const body = await c.req.json();
+    const post = await prisma.post.create({
+        data: {
+            title: body.title,
+            content: body.content,
+            authorId: c.get('userId')
         }
     })
     return c.json({
-        id:post.id
+        id: post.id
     })
 })
 
-blogRouter.put('/',async(c)=>{
+blogRouter.put('/', async (c) => {
     const prisma = new PrismaClient({
-		datasourceUrl: c.env?.POOLING_URL	,
-	}).$extends(withAccelerate());
+        datasourceUrl: c.env?.POOLING_URL,
+    }).$extends(withAccelerate());
 
-    const body=await c.req.json();
-    prisma.post.update({
-        where:{
-            id:body.id,
-            authorId: c.get('userId')
-        },data:{
-            title:body.title,
-            content: body.content
-        }
-    })
-    return c.text('Post updated');
+    const body = await c.req.json();
+    const userId = c.get("userId");
+
+    // find the post
+    const post = await prisma.post.findUnique({
+        where: { id: body.id },
+    });
+
+    if (!post || post.authorId !== userId) {
+        c.status(403);
+        return c.json({ error: "Unauthorized or post not found" });
+    }
+
+    // update the post
+    await prisma.post.update({
+        where: { id: body.id },
+        data: {
+            title: body.title,
+            content: body.content,
+        },
+    });
+
+    return c.text("Post updated");
+
 })
 
-blogRouter.get('/:id',async(c)=>{
-    const id=c.req.param('id');
+blogRouter.get('/:id', async (c) => {
+    const id = c.req.param('id');
     const prisma = new PrismaClient({
-		datasourceUrl: c.env?.POOLING_URL	,
-	}).$extends(withAccelerate());
+        datasourceUrl: c.env?.POOLING_URL,
+    }).$extends(withAccelerate());
 
-    const post=await prisma.post.findUnique({
-        where:{
+    const post = await prisma.post.findUnique({
+        where: {
             id
         }
     })
     return c.json(post);
 })
 
-blogRouter.get('/bulk',async(c)=>{
+blogRouter.get('/bulk', async (c) => {
     const prisma = new PrismaClient({
-		datasourceUrl: c.env?.POOLING_URL	,
-	}).$extends(withAccelerate());
+        datasourceUrl: c.env?.POOLING_URL,
+    }).$extends(withAccelerate());
 
-    const post=await prisma.post.findMany({});
+    const post = await prisma.post.findMany({});
     return c.json(post);
 })
 
